@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Queue Monitor</title>
+<style>
+  body { font-family: -apple-system, Arial, sans-serif; background: #111; color: #eee;
+         display: flex; flex-direction: column; align-items: center; padding: 40px; }
+  h1 { font-weight: 500; margin-bottom: 4px; }
+  .sub { color: #888; margin-bottom: 30px; }
+  .cards { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+  .card { background: #1c1c1c; border-radius: 12px; padding: 24px 32px; min-width: 160px; text-align: center; }
+  .value { font-size: 42px; font-weight: 700; color: #4ade80; }
+  .label { color: #999; margin-top: 6px; font-size: 14px; }
+  a { color: #60a5fa; }
+  #err { color: #f87171; margin-top: 16px; }
+</style>
+</head>
+<body>
+  <h1>Queue Monitor</h1>
+  <div class="sub">Live status, polled every second &middot; <a href="/api/video-feed" target="_blank">debug video feed</a></div>
+  <div class="cards">
+    <div class="card"><div class="value" id="queue_count">--</div><div class="label">Queue count (smoothed)</div></div>
+    <div class="card"><div class="value" id="wait">--</div><div class="label">Est. wait (min)</div></div>
+    <div class="card"><div class="value" id="raw">--</div><div class="label">Raw count</div></div>
+    <div class="card"><div class="value" id="tracked">--</div><div class="label">Tracked people</div></div>
+  </div>
+  <div id="err"></div>
+<script>
+async function poll() {
+  try {
+    const res = await fetch('/api/queue-status');
+    const data = await res.json();
+    document.getElementById('queue_count').textContent = data.queue_count;
+    document.getElementById('wait').textContent = data.estimated_wait_minutes;
+    document.getElementById('raw').textContent = data.raw_count;
+    document.getElementById('tracked').textContent = data.tracked_people;
+    document.getElementById('err').textContent = '';
+  } catch (e) {
+    document.getElementById('err').textContent = 'Could not reach /api/queue-status';
+  }
+}
+poll();
+setInterval(poll, 1000);
+</script>
+</body>
+</html>
